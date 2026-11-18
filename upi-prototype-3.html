@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UPI Tiered Access – Prototype 3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eceaf4;--card:#fff;--ink:#1d1b20;--mut:#6b6874;--line:#e8e6ee;--pri:#5f259f;--pril:#f0e8fb;--ok:#16794c;--okl:#dff3e8;--warn:#a85b00;--warnl:#fff0d6;--bad:#b3261e;--badl:#fde4e2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121116;--card:#1d1b22;--ink:#f2f0f6;--mut:#a29fac;--line:#2f2c37;--pri:#b58cf0;--pril:#2d2144;--ok:#5fd09a;--okl:#173a2a;--warn:#f0b35a;--warnl:#3a2c12;--bad:#ff8a80;--badl:#3d1b19}}
+:root[data-theme="dark"]{--bg:#121116;--card:#1d1b22;--ink:#f2f0f6;--mut:#a29fac;--line:#2f2c37;--pri:#b58cf0;--pril:#2d2144;--ok:#5fd09a;--okl:#173a2a;--warn:#f0b35a;--warnl:#3a2c12;--bad:#ff8a80;--badl:#3d1b19}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px 14px 40px}
+.wrap{max-width:900px;margin:0 auto;display:grid;gap:28px;grid-template-columns:1fr;justify-items:center}
+@media(min-width:820px){.wrap{grid-template-columns:320px 1fr;align-items:start;justify-items:stretch}}
+h1{font-size:26px;line-height:1.15;margin:4px 0 8px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pri);font-weight:600}
+.side p{color:var(--mut);line-height:1.5;margin:0 0 14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:99px;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.new{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.new b{display:block;margin-bottom:6px}.new ul{margin:0;padding-left:18px;color:var(--mut);font-size:14px;line-height:1.6}
+.phone{width:350px;max-width:100%;height:710px;background:var(--bg);border:8px solid #17161b;border-radius:40px;display:flex;flex-direction:column;overflow:hidden;justify-self:center}
+@media(max-width:500px){.phone{border:0;border-radius:18px;height:calc(100dvh - 40px);min-height:560px}}
+.status{display:flex;justify-content:space-between;font-size:12px;padding:10px 20px 4px;color:var(--mut);background:var(--card)}
+.scr{flex:1;overflow:auto;padding:0 0 16px;--fs:15px;font-size:var(--fs)}
+.scr.eld{--fs:19px}
+.hd{background:var(--card);padding:10px 16px 14px;display:flex;align-items:center;gap:10px}
+.hd .me{width:2.3em;height:2.3em;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:700}
+.hd .sr{flex:1;background:var(--bg);border-radius:99px;padding:9px 14px;color:var(--mut);font-size:.9em}
+.pad16{padding:12px 16px}
+.sec{font-size:.78em;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:8px 0 8px}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:var(--card);border-radius:16px;padding:14px 6px;margin-bottom:14px}
+.qa button{background:none;border:0;color:var(--ink);font-size:.75em;cursor:pointer;padding:0 2px}
+.qa i{display:grid;place-items:center;width:3em;height:3em;border-radius:50%;background:var(--pril);color:var(--pri);font-style:normal;font-size:1.5em;margin:0 auto 6px}
+.eld .qa{grid-template-columns:1fr 1fr}.eld .qa button{font-size:.8em;padding:8px 0}
+.kid .qa i{background:#ffe08a;color:#6a4b00}
+.ppl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.ppl button{background:none;border:0;color:var(--ink);font-size:.75em;cursor:pointer}
+.av{width:2.4em;height:2.4em;border-radius:50%;background:var(--pril);color:var(--pri);display:grid;place-items:center;font-weight:700;flex:none;margin:0 auto 4px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px}
+.chk{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.chk small{color:var(--pri);font-weight:600;cursor:pointer}
+.chip{font-size:.72em;background:var(--pril);color:var(--pri);padding:3px 10px;border-radius:99px;font-weight:600}
+.row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;margin-bottom:8px;background:var(--card);width:100%;border:0;color:var(--ink);text-align:left;font-size:1em;cursor:pointer}
+.row .av{margin:0}.row .s{font-size:.8em;color:var(--mut)}.row .r{margin-left:auto;font-weight:600}
+.btn{display:block;width:100%;border:0;border-radius:99px;padding:14px;background:var(--pri);color:#fff;font-size:1em;font-weight:600;cursor:pointer;margin-top:10px}
+.btn.alt{background:var(--pril);color:var(--pri)}
+.btn:disabled{opacity:.4}
+.eld .btn{padding:18px}
+h2{font-size:1.2em;margin:4px 0 10px}
+.note{border-radius:12px;padding:10px 12px;font-size:.88em;margin:10px 0;line-height:1.4}
+.note.w{background:var(--warnl);color:var(--warn)}.note.o{background:var(--okl);color:var(--ok)}.note.b{background:var(--badl);color:var(--bad)}
+.amt{text-align:center;font-size:2.6em;font-weight:700;margin:10px 0}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.keys button{padding:14px;font-size:1.2em;border-radius:12px;border:0;background:var(--card);color:var(--ink);cursor:pointer}
+.dots{display:flex;gap:12px;justify-content:center;margin:18px 0}
+.dots span{width:14px;height:14px;border-radius:50%;border:2px solid var(--pri)}.dots span.f{background:var(--pri)}
+.tick{width:80px;height:80px;border-radius:50%;background:var(--okl);color:var(--ok);display:grid;place-items:center;font-size:42px;margin:30px auto 12px}
+.tick.p{background:var(--warnl);color:var(--warn)}.tick.x{background:var(--badl);color:var(--bad)}
+.c{text-align:center}
+.bar{height:10px;border-radius:9px;background:var(--line);overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--ok)}
+.tier{display:block;width:100%;text-align:left;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);margin-bottom:10px;cursor:pointer;font-size:1em}
+.tier b{display:block;font-size:1.1em;margin-bottom:2px}.tier span{color:var(--mut);font-size:.88em}
+.nav{display:flex;background:var(--card);border-top:1px solid var(--line);align-items:flex-end}
+.nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 0 10px;font-size:12px;cursor:pointer}
+.eld~.nav button,.nav.big button{font-size:14px}
+.nav button.on{color:var(--pri);font-weight:600}
+.nav i{display:block;font-style:normal;font-size:20px}
+.nav .sc i{width:54px;height:54px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;margin:-22px auto 2px;font-size:24px;box-shadow:0 4px 12px rgba(95,37,159,.4)}
+.cam{position:relative;background:#000;height:100%;min-height:420px;overflow:hidden}
+.cam video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.vf{position:absolute;left:50%;top:44%;width:220px;height:220px;transform:translate(-50%,-50%);border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.55)}
+.vf b{position:absolute;width:34px;height:34px;border:4px solid #fff}
+.vf b:nth-child(1){top:-2px;left:-2px;border-right:0;border-bottom:0;border-radius:18px 0 0 0}
+.vf b:nth-child(2){top:-2px;right:-2px;border-left:0;border-bottom:0;border-radius:0 18px 0 0}
+.vf b:nth-child(3){bottom:-2px;left:-2px;border-right:0;border-top:0;border-radius:0 0 0 18px}
+.vf b:nth-child(4){bottom:-2px;right:-2px;border-left:0;border-top:0;border-radius:0 0 18px 0}
+.vf u{position:absolute;left:8px;right:8px;height:2px;background:#7CFFB2;animation:ln 2s ease-in-out infinite alternate}
+@keyframes ln{from{top:8px}to{top:208px}}
+.ctl{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff}
+.ctl .btn{margin-top:8px;background:rgba(255,255,255,.18);color:#fff}
+.cam .tp{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;color:#fff;font-weight:600}
+.cam .tp button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:99px;padding:6px 12px;cursor:pointer}
+#cerr{display:none;position:absolute;top:50px;left:12px;right:12px}
+.samp{display:flex;flex-direction:column;gap:6px}
+.samp button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 10px;text-align:left;font-size:.8em;cursor:pointer}
+#qrbox{display:grid;place-items:center;background:#fff;border-radius:16px;padding:16px;margin:10px auto;width:max-content}
+</style></head>
+<body>
+<div class="wrap">
+ <div class="side">
+  <div class="eyebrow">Prototype 3</div>
+  <h1>UPI app with a working scanner</h1>
+  <p>Pick a tier, then tap the big Scan button. The camera reads any real UPI QR code (upi://pay…). No camera? Upload a QR photo or tap a sample.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="new"><b>What’s new vs. prototype 2</b>
+   <ul><li>Real QR scanning with the camera (jsQR)</li>
+    <li>Scan from a gallery image, or try sample QRs</li>
+    <li>QR amount and payee fill the payment flow automatically</li>
+    <li>My QR screen you can scan from another phone</li>
+    <li>Tier rules apply to scans: kids can only pay approved contacts, elders get a warning for unknown payees</li>
+    <li>PhonePe/GPay-style layout</li></ul></div>
+ </div>
+ <div class="phone"><div class="status"><span>10:37</span><span>●●●● 4G 70%</span></div><div id="app" style="display:flex;flex-direction:column;flex:1;min-height:0"></div></div>
+</div>
+<script>
+var TIERS={std:{n:'Standard',bal:24850,lim:0,left:0,me:'Anas'},eld:{n:'Elderly',bal:18200,lim:5000,left:0,me:'Ramesh'},kid:{n:'Kids',bal:640,lim:500,left:360,me:'Aanya'}};
+var CON={
+ std:[['Aarav Mehta','aarav@upi'],['Meera Iyer','meera@upi'],['Zomato','zomato@upi'],['Landlord','rent@upi']],
+ eld:[['Ravi (Son)','ravi@upi'],['Sunita (Daughter)','sunita@upi'],['Dr. Rao','rao@upi'],['Milk Vendor','milk@upi'],['Unknown number','98xxxx4471@upi',1]],
+ kid:[['Mom','mom@upi'],['Dad','dad@upi'],['School Canteen','canteen@upi']]};
+var SAMPLES=[['Zomato, ₹420','upi://pay?pa=zomato@upi&pn=Zomato&am=420&cu=INR'],['Milk Vendor, any amount','upi://pay?pa=milk@upi&pn=Milk%20Vendor&cu=INR'],['Unknown shop, ₹9,000','upi://pay?pa=98xxxx4471@upi&pn=Lucky%20Draw&am=9000&cu=INR']];
+var S={tier:null,scr:'setup',to:null,amt:'',pin:'',res:null,scanVia:false,hist:{std:[['Zomato',-420],['Salary',45000]],eld:[['Milk Vendor',-120],['Pension',12400]],kid:[['Pocket money',500],['School Canteen',-140]]}};
+var stream=null,raf=0,badAt=0;
+var $=function(i){return document.getElementById(i)};
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN')}
+function init(n){return n.split(' ')[0][0]}
+function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}}
+function go(s){stopCam();S.scr=s;if(s=='amt'&&!S.keepAmt){S.amt=''}S.keepAmt=false;if(s=='pin')S.pin='';render()}
+function setTier(t){stopCam();S.tier=t;S.scr=t?'home':'setup';S.to=null;S.amt='';S.res=null;render()}
+function pick(i){S.to=CON[S.tier][i];S.scanVia=false;go('amt')}
+function key(k){if(k=='<')S.amt=S.amt.slice(0,-1);else if(S.amt.length<6)S.amt+=k;render()}
+function pk(k){if(k=='<')S.pin=S.pin.slice(0,-1);else if(S.pin.length<4)S.pin+=k;render();if(S.pin.length==4)setTimeout(finish,350)}
+function speak(){try{var m=new SpeechSynthesisUtterance('You are sending '+S.amt+' rupees to '+S.to[0].replace(/\(.*\)/,'')+'. Tap confirm if this is correct.');speechSynthesis.cancel();speechSynthesis.speak(m)}catch(e){}}
+function finish(){var T=TIERS[S.tier],a=+S.amt;T.bal-=a;if(S.tier=='kid')T.left-=a;S.hist[S.tier].unshift([S.to[0],-a]);S.res='sent';go('done')}
+function review(){var a=+S.amt,T=TIERS[S.tier];if(S.tier=='kid'&&a>T.left){S.res='ask';go('done');return}go('review')}
+function approve(){S.res='wait';render();setTimeout(function(){S.res='ok';S.scr='pin';S.pin='';render()},1600)}
+function pad(f){var h='<div class="keys">';'123456789'.split('').forEach(function(k){h+='<button onclick="'+f+'(\''+k+'\')">'+k+'</button>'});return h+'<button disabled></button><button onclick="'+f+'(\'0\')">0</button><button onclick="'+f+'(\'<\')">⌫</button></div>'}
+
+/* ---------- scanner ---------- */
+function parseUPI(txt){
+ if(!/^upi:\/\/pay\?/i.test(txt))return null;
+ var p={};txt.split('?')[1].split('&').forEach(function(kv){var a=kv.split('=');try{p[a[0]]=decodeURIComponent((a[1]||'').replace(/\+/g,' '))}catch(e){p[a[0]]=a[1]}});
+ return p.pa?p:null}
+function handleScan(txt){
+ var p=parseUPI(txt);
+ if(!p){var e=$('cerr');if(e){e.style.display='block';e.className='note b';e.textContent='That QR is not a UPI payment code. Keep scanning or try another.'}return false}
+ stopCam();
+ var t=S.tier,known=CON[t].filter(function(c){return c[1]==p.pa})[0];
+ S.scanVia=true;
+ if(t=='kid'&&!known){S.res='block';S.to=[p.pn||p.pa,p.pa];go('done');return true}
+ S.to=known||[p.pn||p.pa,p.pa,1];
+ var am=parseFloat(p.am);
+ if(am>0&&am<=999999){S.amt=String(Math.round(am));S.keepAmt=true;review()}else go('amt');
+ return true}
+function loop(){
+ if(!stream)return;var v=$('vid'),c=$('cv');
+ if(v&&v.readyState>=2&&v.videoWidth){
+  c.width=v.videoWidth;c.height=v.videoHeight;var x=c.getContext('2d');x.drawImage(v,0,0);
+  var d=x.getImageData(0,0,c.width,c.height),r=window.jsQR&&jsQR(d.data,d.width,d.height);
+  if(r&&r.data&&Date.now()>badAt){if(handleScan(r.data))return;badAt=Date.now()+2000}}
+ raf=requestAnimationFrame(loop)}
+function camFail(m){var e=$('cerr');if(e){e.style.display='block';e.className='note w';e.textContent=m||'Camera not available here. Upload a QR photo or tap a sample below.'}}
+function startCam(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail();return}
+ navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(st){
+  if(S.scr!='scan'){st.getTracks().forEach(function(t){t.stop()});return}
+  stream=st;var v=$('vid');v.srcObject=st;v.play();loop()}).catch(function(){camFail()})}
+function fromFile(inp){
+ var f=inp.files&&inp.files[0];if(!f)return;
+ var img=new Image();img.onload=function(){var c=$('cv');c.width=img.width;c.height=img.height;var x=c.getContext('2d');x.drawImage(img,0,0);
+  var d=x.getImageData(0,0,c.width,c.height),r=window.jsQR&&jsQR(d.data,d.width,d.height);
+  if(r&&r.data)handleScan(r.data);else{var e=$('cerr');e.style.display='block';e.className='note b';e.textContent='No QR code found in that image.'}};
+ img.src=URL.createObjectURL(f)}
+
+function nav(){
+ function b(s,ic,l,cls){return '<button class="'+(cls||'')+(S.scr==s?' on':'')+'" onclick="go(\''+s+'\')"><i>'+ic+'</i>'+l+'</button>'}
+ return '<div class="nav">'+b('home','🏠','Home')+b('scan','⛶','Scan','sc')+b('hist','🕘','History')+'</div>'}
+function render(){
+ var t=S.tier,T=TIERS[t]||{},h='',cls=t||'',showNav=true,s=S.scr,post=null;
+ if(s=='setup'){showNav=false;h='<div class="pad16"><h2 style="margin-top:20px">Welcome. Who is this for?</h2><p style="color:var(--mut);margin:0 0 14px">Choose the experience that fits. You can change it later.</p>'+
+  '<button class="tier" onclick="setTier(\'std\')"><b>Standard</b><span>Full UPI: scan, send, request, bills.</span></button>'+
+  '<button class="tier" onclick="setTier(\'eld\')"><b>Elderly</b><span>Big text, read-aloud, scam alerts, family approval for large payments.</span></button>'+
+  '<button class="tier" onclick="setTier(\'kid\')"><b>Kids</b><span>Weekly limit, approved contacts only, parent requests.</span></button></div>'}
+ else if(s=='home'){
+  var acts=t=='std'?[['⛶','Scan','scan'],['↗','Pay','pick'],['↙','Request','home'],['🧾','Bills','home']]:t=='eld'?[['⛶','Scan to pay','scan'],['↗','Send money','pick'],['🕘','Past payments','hist'],['🆘','Help','home']]:[['⛶','Scan','scan'],['↗','Pay','pick'],['🐷','My jar','home'],['🕘','Activity','hist']];
+  h='<div class="hd"><div class="me">'+T.me[0]+'</div><div class="sr">'+(t=='eld'?'Hello, '+T.me:t=='kid'?'Hi '+T.me+'! 👋':'Pay by name or UPI ID')+'</div><span class="chip">'+T.n+'</span></div><div class="pad16">'+
+  '<div class="qa">'+acts.map(function(a){return '<button onclick="go(\''+a[2]+'\')"><i>'+a[0]+'</i>'+a[1]+'</button>'}).join('')+'</div>'+
+  '<div class="sec">People</div><div class="ppl">'+CON[t].slice(0,4).map(function(c,i){return '<button onclick="pick('+i+')"><div class="av">'+init(c[0])+'</div>'+c[0].split(' ')[0]+'</button>'}).join('')+'</div>'+
+  '<div class="card"><div class="chk"><span>Bank account</span><small onclick="go(\'qr\')">My QR</small></div><div style="font-size:.8em;color:var(--mut);margin-top:2px">'+(t=='kid'?'Kids wallet':'XXXX 4821')+'</div><div style="font-size:1.8em;font-weight:700;margin-top:6px">'+fmt(T.bal)+'</div></div>';
+  if(t=='kid'){var p=Math.max(0,T.left)/T.lim*100;h+='<div class="card"><b>Spend limit this week</b><div class="bar"><i style="width:'+p+'%"></i></div><small style="color:var(--mut)">'+fmt(T.left)+' left of '+fmt(T.lim)+' · set by Mom. Scan only works for approved contacts.</small></div>'}
+  if(t=='eld')h+='<div class="note o">🛡 Payments above '+fmt(T.lim)+' need Ravi’s OK. Unknown payees get a warning.</div>';
+  h+='<button class="btn alt" onclick="setTier(null)">Switch tier (setup)</button></div>'}
+ else if(s=='scan'){showNav=false;
+  h='<div class="cam"><video id="vid" playsinline muted></video><canvas id="cv" style="display:none"></canvas><div class="vf"><b></b><b></b><b></b><b></b><u></u></div>'+
+  '<div class="tp"><button onclick="go(\'home\')">✕ Close</button><button onclick="go(\'qr\')">My QR</button></div><div id="cerr" class="note w"></div>'+
+  '<div class="ctl"><div class="c" style="font-size:.9em;margin-bottom:6px">Point the camera at a UPI QR code</div>'+
+  '<label class="btn" style="text-align:center;cursor:pointer;font-size:.9em">🖼 Upload QR from gallery<input type="file" accept="image/*" hidden onchange="fromFile(this)"></label>'+
+  '<div style="font-size:.75em;margin:10px 0 4px;opacity:.8">No camera? Try a sample:</div><div class="samp">'+SAMPLES.map(function(x,i){return '<button onclick="handleScan(SAMPLES['+i+'][1])">'+x[0]+'</button>'}).join('')+'</div></div></div>';
+  post=startCam}
+ else if(s=='qr'){h='<div class="hd"><button class="btn alt" style="width:auto;margin:0;padding:8px 14px" onclick="go(\'home\')">‹ Back</button><b>My QR code</b></div><div class="pad16 c"><div id="qrbox"></div><b>'+T.me+'</b><div style="color:var(--mut);font-size:.85em">'+T.me.toLowerCase()+'@upi</div><p style="color:var(--mut);font-size:.85em">Scan this from another phone or another tab of this prototype.</p></div>';
+  post=function(){var b=$('qrbox');if(b&&window.QRCode)new QRCode(b,{text:'upi://pay?pa='+T.me.toLowerCase()+'@upi&pn='+encodeURIComponent(T.me)+'&cu=INR',width:190,height:190})}}
+ else if(s=='pick'){h='<div class="pad16"><h2>Who are you paying?</h2>'+CON[t].map(function(c,i){return '<button class="row" onclick="pick('+i+')"><div class="av">'+init(c[0])+'</div><div><div>'+c[0]+'</div><div class="s">'+c[1]+'</div></div></button>'}).join('')+'</div>'}
+ else if(s=='amt'){var a=+S.amt||0;h='<div class="pad16"><div class="c"><div class="av" style="margin:0 auto">'+init(S.to[0])+'</div><div style="margin-top:6px">'+S.to[0]+'</div><div style="color:var(--mut);font-size:.8em">'+S.to[1]+'</div></div><div class="amt">'+fmt(a)+'</div>'+
+  (t=='kid'?'<div class="c" style="color:var(--mut);font-size:.85em;margin-top:-6px">'+fmt(T.left)+' left this week</div>':'')+pad('key')+'<button class="btn" '+(a?'':'disabled')+' onclick="review()">Continue</button></div>'}
+ else if(s=='review'){var a=+S.amt,big=t=='eld'&&a>T.lim,scam=S.to[2];
+  h='<div class="pad16"><h2>Check before you pay</h2><div class="card c"><div style="color:var(--mut)">You are sending'+(S.scanVia?' (via QR scan)':'')+'</div><div class="amt" style="margin:4px 0">'+fmt(a)+'</div><div>to <b>'+S.to[0]+'</b></div><div style="color:var(--mut);font-size:.85em">'+S.to[1]+'</div></div>';
+  if(scam)h+='<div class="note w">⚠ This payee is not in your contacts. Scammers often pretend to be banks, shops or family. Only continue if you know this person.</div>';
+  if(t=='eld')h+='<button class="btn alt" onclick="speak()">🔊 Read this aloud</button>';
+  if(S.res=='wait')h+='<div class="note w">Waiting for Ravi to approve…</div>';
+  else if(big)h+='<div class="note w">This is more than '+fmt(T.lim)+'. Ravi needs to approve it first.</div><button class="btn" onclick="approve()">Ask Ravi to approve</button>';
+  else h+='<button class="btn" onclick="go(\'pin\')">'+(scam?'I know them, continue':'Confirm')+'</button>';
+  h+='<button class="btn alt" onclick="S.res=null;go(\'home\')">Cancel</button></div>'}
+ else if(s=='pin'){showNav=false;h='<div class="pad16"><div class="c" style="margin-top:40px"><h2>Enter UPI PIN</h2>'+(S.res=='ok'?'<div class="note o">Ravi approved ✓</div>':'')+'<div class="dots">'+[0,1,2,3].map(function(i){return '<span class="'+(S.pin.length>i?'f':'')+'"></span>'}).join('')+'</div></div>'+pad('pk')+'</div>'}
+ else if(s=='done'){showNav=false;
+  if(S.res=='ask')h='<div class="tick p">🙋</div><h2 class="c">Asked Mom</h2><p class="c" style="color:var(--mut)">'+fmt(+S.amt)+' is more than your '+fmt(T.left)+' left this week. Mom will get a request.</p>';
+  else if(S.res=='block')h='<div class="tick x">✋</div><h2 class="c">Ask a parent first</h2><p class="c" style="color:var(--mut);padding:0 16px">'+S.to[0]+' is not an approved contact. Kids can only pay people Mom or Dad approved. A request was sent to Mom.</p>';
+  else h='<div class="tick">✓</div><h2 class="c">'+(t=='kid'?'Done! 🎉':'Payment sent')+'</h2><p class="c" style="color:var(--mut)">'+fmt(+S.amt)+' to '+S.to[0]+'</p>';
+  h+='<div class="pad16"><button class="btn" onclick="S.res=null;go(\'home\')">Back to home</button></div>'}
+ else if(s=='hist'){h='<div class="pad16"><h2>'+(t=='eld'?'Past payments':'Activity')+'</h2>'+S.hist[t].map(function(x){return '<div class="row" style="cursor:default"><div class="av">'+init(x[0])+'</div><div>'+x[0]+'</div><div class="r" style="color:'+(x[1]<0?'var(--ink)':'var(--ok)')+'">'+(x[1]<0?'−':'+')+fmt(Math.abs(x[1]))+'</div></div>'}).join('')+'</div>'}
+ $('app').innerHTML='<div class="scr '+cls+'" style="flex:1;'+(s=='scan'?'padding:0;overflow:hidden':'')+'">'+h+'</div>'+(showNav?nav():'');
+ var tb=[['','Setup'],['std','Standard'],['eld','Elderly'],['kid','Kids']];
+ $('tabs').innerHTML=tb.map(function(x){return '<button class="'+((t||'')==x[0]?'on':'')+'" onclick="setTier('+(x[0]?"'"+x[0]+"'":'null')+')">'+x[1]+'</button>'}).join('');
+ if(post)post()}
+render();
+</script>
+</body></html>
